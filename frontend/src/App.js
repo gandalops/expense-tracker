@@ -34,6 +34,7 @@ const AdminProfile = lazy(() => import('./pages/admin/adminProfile.js'))
 const UserProfile = lazy(() => import('./pages/user/userProfile.js'))
 const UserStatistics = lazy(() => import('./pages/user/statistics.js'))
 
+
 function App() {
 
     const [isDarkMode, toggleTheme] = useTheme()
