@@ -18,8 +18,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
-// Login part
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
@@ -32,6 +30,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        
+        // Skip JWT check for login endpoint and other public endpoints
+        if (isPublicEndpoint(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
@@ -46,9 +51,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                // If no valid JWT found for a protected endpoint
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
+                return;
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Cannot set user authentication: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Authentication Failed");
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -62,5 +73,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    /**
+     * Check if the request is for a public endpoint that shouldn't require JWT authentication
+     */
+    private boolean isPublicEndpoint(HttpServletRequest request) {
+        String path = request.getServletPath();
+        
+        // Add all public endpoints here
+        return path.startsWith("/auth/") ||  // All auth endpoints
+               path.startsWith("/public/") || // Any other public APIs
+               path.equals("/") || // Root endpoint
+               path.startsWith("/swagger") || // Swagger docs
+               path.startsWith("/v3/api-docs"); // OpenAPI docs
     }
 }

@@ -3,6 +3,7 @@ package com.fullStack.expenseTracker.security;
 import com.fullStack.expenseTracker.security.jwt.AuthEntryPointJwt;
 import com.fullStack.expenseTracker.security.jwt.AuthTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -30,6 +32,22 @@ public class WebSecurityConfig {
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
+
+    // Define public endpoints that don't require authentication
+    private static final String[] PUBLIC_ENDPOINTS = {
+        "/auth/**",
+        "/api/auth/**",
+        "/mywallet/auth/**",
+        "/api/mywallet/auth/**",
+        "/mywallet/transactiontype/**",
+        "/mywallet/category/**",
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-resources/**"
+    };
+    
+    @Value("${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
+    private String corsAllowedOrigins;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -57,36 +75,48 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // Allow your frontend origin
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Configure allowed origins, methods, and headers
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigins.split(",")));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization")); // Expose Authorization header
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // 1 hour cache for CORS preflight
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // Apply to all paths
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
+            // Enable CORS with the configured settings
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            
+            // Disable CSRF as we're using JWT
+            .csrf(AbstractHttpConfigurer::disable)
+            
+            // Configure exception handling for unauthorized requests
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+            
+            // Set session management to stateless (no sessions)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth ->
-                auth.requestMatchers("/auth/login").permitAll()
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/mywallet/auth/**").permitAll()
-                    .requestMatchers("/mywallet/transactiontype/**").permitAll()
-                    .requestMatchers("/mywallet/category/**").permitAll()
-                    .requestMatchers("/mywallet/transaction/**").permitAll()
-                    .requestMatchers("/mywallet/user/**").permitAll()
-                    .anyRequest().authenticated()
+            
+            // Configure authorization rules
+            .authorizeHttpRequests(auth -> auth
+                // Allow public endpoints without authentication
+                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                
+                // All other requests require authentication
+                .anyRequest().authenticated()
             );
 
-        http.authenticationProvider(authenticationProvider());
+        // Add our custom JWT filter
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        
+        // Set the authentication provider
+        http.authenticationProvider(authenticationProvider());
 
         return http.build();
     }
