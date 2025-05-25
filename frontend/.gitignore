@@ -25,4 +25,4 @@ yarn-error.log*
 # environment variables
 .env
 .env.local
-*.log
+*.log*.pid
