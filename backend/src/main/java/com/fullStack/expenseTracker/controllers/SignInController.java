@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/mywallet/auth")
+@RequestMapping("/api/v1/auth")
 public class SignInController {
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -31,7 +31,7 @@ public class SignInController {
      * @param signInRequestDto Contains email and password
      * @return ResponseEntity with JWT token and user details
      */
-    @PostMapping("/signin")
+    @PostMapping("/login")
     public ResponseEntity<?> signIn(@RequestBody @Valid SignInRequestDto signInRequestDto) {
         try {
             // Authenticate user credentials
@@ -73,11 +73,5 @@ public class SignInController {
         }
     }
 
-    /**
-     * Health check endpoint for auth service
-     */
-    @GetMapping("/health")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Auth service is healthy");
-    }
+    
 }

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/mywallet/category")
+@RequestMapping("/api/v1/categories")
 public class CategoryController {
 
     @Autowired
@@ -25,30 +25,30 @@ public class CategoryController {
     @Autowired
     private TransactionTypeService transactionTypeService;
 
-    @GetMapping("/getAll")
+    @GetMapping("/")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponseDto<?>> getAllCategories() {
         return categoryService.getCategories();
     }
 
-    @PostMapping("/new")
+    @PostMapping("/")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponseDto<?>> addNewCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto)
             throws CategoryServiceLogicException, TransactionTypeNotFoundException, CategoryAlreadyExistsException {
         return categoryService.addNewCategory(categoryRequestDto);
     }
 
-    @PutMapping("/update")
+    @PutMapping("/{category-id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponseDto<?>> updateCategory(@Param ("categoryId") int categoryId,
+    public ResponseEntity<ApiResponseDto<?>> updateCategory(@PathVariable ("category-id") int categoryId,
                                                             @RequestBody @Valid CategoryRequestDto categoryRequestDto)
             throws CategoryServiceLogicException, CategoryNotFoundException, TransactionTypeNotFoundException {
         return categoryService.updateCategory(categoryId, categoryRequestDto);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/{category-id}/status")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponseDto<?>> disableOrEnableCategory(@Param ("categoryId") int categoryId)
+    public ResponseEntity<ApiResponseDto<?>> disableOrEnableCategory(@PathVariable ("category-id") int categoryId)
             throws CategoryServiceLogicException, CategoryNotFoundException {
         return categoryService.enableOrDisableCategory(categoryId);
     }

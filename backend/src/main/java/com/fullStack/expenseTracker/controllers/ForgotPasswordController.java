@@ -14,31 +14,31 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/mywallet/auth/forgotPassword")
+@RequestMapping("/api/v1/auth/forgot-password")
 public class ForgotPasswordController {
 
     @Autowired
     private AuthService authService;
 
-    @GetMapping("/verifyEmail")
+    @GetMapping("/verify-email")
     public ResponseEntity<ApiResponseDto<?>> verifyEmail(@Param("email") String email)
             throws UserNotFoundException, UserServiceLogicException {
         return authService.verifyEmailAndSendForgotPasswordVerificationEmail(email);
     }
 
-    @GetMapping("/verifyCode")
+    @GetMapping("/verify-code")
     public ResponseEntity<ApiResponseDto<?>> verifyCode(@Param("code") String code)
             throws UserVerificationFailedException, UserServiceLogicException {
         return authService.verifyForgotPasswordVerification(code);
     }
 
-    @PostMapping("/resetPassword")
+    @PostMapping("/reset-password")
     public ResponseEntity<ApiResponseDto<?>> resetPassword(@RequestBody @Valid ResetPasswordRequestDto resetPasswordDto)
             throws UserNotFoundException, UserServiceLogicException {
         return authService.resetPassword(resetPasswordDto);
     }
 
-    @GetMapping("/resendEmail")
+    @GetMapping("/resend-email")
     public ResponseEntity<ApiResponseDto<?>> resendEmail(@Param("email") String email)
             throws UserNotFoundException, UserServiceLogicException {
         return authService.verifyEmailAndSendForgotPasswordVerificationEmail(email);

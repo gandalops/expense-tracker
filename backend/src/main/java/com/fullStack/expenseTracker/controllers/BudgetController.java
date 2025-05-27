@@ -13,24 +13,24 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/mywallet/budget")
+@RequestMapping("/api/v1/budgets")
 public class BudgetController {
 
     @Autowired
     private BudgetService budgetService;
 
-    @PostMapping("/create")
+    @PostMapping("/")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ApiResponseDto<?>> createBudget(@RequestBody BudgetRequest budgetRequest)
             throws UserNotFoundException, UserServiceLogicException {
         return budgetService.createBudget(budgetRequest);
     }
 
-    @GetMapping("/get")
+    @GetMapping("/monthly/{user-id}/{month}/{year}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> getBudgetByMonth(@Param("userId") long userId,
-                                                              @Param("month") int month,
-                                                              @Param("year") long year)
+    public ResponseEntity<ApiResponseDto<?>> getBudgetByMonth(@PathVariable("user-id") long userId,
+                                                              @PathVariable("month") int month,
+                                                              @PathVariable("year") long year)
             throws UserServiceLogicException {
         return budgetService.getBudgetByMonth(userId, month, year);
     }

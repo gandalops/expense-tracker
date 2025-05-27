@@ -17,24 +17,24 @@ import org.springframework.web.bind.annotation.*;
 import java.io.UnsupportedEncodingException;
 
 @RestController
-@RequestMapping("/api/mywallet/auth")
+@RequestMapping("/api/v1/auth")
 public class SignUpController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     public ResponseEntity<ApiResponseDto<?>> registerUser(@RequestBody @Valid SignUpRequestDto signUpRequestDto)
             throws MessagingException, UnsupportedEncodingException, UserAlreadyExistsException, UserServiceLogicException {
         return authService.save(signUpRequestDto);
     }
 
-    @GetMapping("/signup/verify")
+    @GetMapping("/verify-registration")
     public ResponseEntity<ApiResponseDto<?>> verifyUserRegistration(@Param("code") String code)
             throws UserVerificationFailedException {
         return authService.verifyRegistrationVerification(code);
     }
 
-    @GetMapping("/signup/resend")
+    @GetMapping("/resend-verification")
     public ResponseEntity<ApiResponseDto<?>> resendVerificationCode(@Param("email") String email)
             throws UserNotFoundException, MessagingException, UnsupportedEncodingException, UserServiceLogicException {
         return authService.resendVerificationCode(email);

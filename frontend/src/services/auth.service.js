@@ -16,10 +16,14 @@ import API_BASE_URL from "./auth.config";
  * @returns {Promise} Axios response
  */
 const register_req = async (username, email, password) => {
-  return await axios.post(`${API_BASE_URL}/auth/signup`, {
+  return await axios.post(`${API_BASE_URL}/auth/register`, {
     userName: username,
     email: email,
     password: password // Backend will hash this
+  }, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
   });
 };
 

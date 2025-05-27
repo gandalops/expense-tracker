@@ -13,13 +13,13 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/mywallet/transactiontype")
+@RequestMapping("/api/v1/transactiontypes")
 public class TransactionTypeController {
 
     @Autowired
     private TransactionTypeService transactionTypeService;
 
-    @GetMapping("/all")
+    @GetMapping("/")
     @PreAuthorize("hasRole('ROLE_USER')")
     public List<TransactionType> getAllTransactionTypes() {
         return transactionTypeService.getAllTransactions();

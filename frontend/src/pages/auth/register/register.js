@@ -18,30 +18,38 @@ function Register() {
 
 
     const onSubmit = async (data) => {
-        setIsLoading(true)        
-        await AuthService.register_req(data.username, data.email, data.password).then(
-            (response) => {
-                console.log(response);
-                if (response.data.status === "SUCCESS"){
-                    setResponseError("");
-                    navigate(`/auth/userRegistrationVerfication/${data.email}`);
-                }
-                else {
-                    setResponseError("Registration failed: Something went wrong!")
-                }
-            },
-            (error) => {
-                if (error.response) {
-                    const resMessage = error.response.data.response
-                    setResponseError(resMessage);
-                    console.log(error.response.data);
-                }else {
-                    setResponseError("Registration failed: Something went wrong!")
-                }
-                
+        setIsLoading(true);
+        try {
+            // Transform username to userName to match DTO
+            const requestData = {
+                userName: data.username,  // Map form's 'username' to DTO's 'userName'
+                email: data.email,
+                password: data.password
+            };
+
+            const response = await AuthService.register_req(
+                requestData.userName,
+                requestData.email,
+                requestData.password
+            );
+
+            if (response.data.status === "SUCCESS") {
+                setResponseError("");
+                navigate(`/auth/userRegistrationVerfication/${data.email}`);
+            } else {
+                setResponseError(response.data.message || "Registration failed");
             }
-          );
-        setIsLoading(false);
+        } catch (error) {
+            console.error("Registration error:", error);
+            setResponseError(
+                error.response?.data?.response ||  // Matches your current error response structure
+                error.response?.data?.message ||
+                error.message ||
+                "Registration failed. Please try again."
+            );
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return(

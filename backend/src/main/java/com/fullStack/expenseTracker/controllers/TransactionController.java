@@ -10,16 +10,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable; 
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/mywallet/transaction")
+@RequestMapping("/api/v1/transactions")
 public class TransactionController {
 
     @Autowired
     TransactionService transactionService;
 
-    @GetMapping("/getAll")
+    @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponseDto<?>> getAllTransactions(@Param("pageNumber") int pageNumber,
                                                          @Param("pageSize") int pageSize,
@@ -27,7 +28,7 @@ public class TransactionController {
         return transactionService.getAllTransactions(pageNumber, pageSize, searchKey);
     }
 
-    @PostMapping("/new")
+    @PostMapping("/")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ApiResponseDto<?>> addTransaction(@RequestBody @Valid TransactionRequestDto transactionRequestDto)
             throws UserNotFoundException, CategoryNotFoundException, TransactionServiceLogicException {
@@ -35,9 +36,9 @@ public class TransactionController {
         return transactionService.addTransaction(transactionRequestDto);
     }
 
-    @GetMapping("/getByUser")
+    @GetMapping("/user/{user-email}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> getTransactionsByUser(@Param("email") String email,
+    public ResponseEntity<ApiResponseDto<?>> getTransactionsByUser(@PathVariable("user-email") String email,
                                                                    @Param("pageNumber") int pageNumber,
                                                                    @Param("pageSize") int pageSize,
                                                                    @Param("searchKey") String searchKey,
@@ -49,9 +50,9 @@ public class TransactionController {
         return transactionService.getTransactionsByUser(email, pageNumber, pageSize, searchKey, sortField, sortDirec, transactionType);
     }
 
-    @GetMapping("/getById")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> getTransactionById(@Param("id") Long id)
+    public ResponseEntity<ApiResponseDto<?>> getTransactionById(@PathVariable("id") Long id)
             throws TransactionNotFoundException {
 
         return transactionService.getTransactionById(id);
@@ -59,18 +60,18 @@ public class TransactionController {
     }
 
 
-    @PutMapping("/update")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> updateTransaction(@Param("transactionId") Long transactionId,
+    public ResponseEntity<ApiResponseDto<?>> updateTransaction(@PathVariable("id") Long transactionId,
                                                                @RequestBody @Valid TransactionRequestDto transactionRequestDto)
             throws UserNotFoundException, CategoryNotFoundException, TransactionNotFoundException, TransactionServiceLogicException {
 
         return transactionService.updateTransaction(transactionId, transactionRequestDto);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> deleteTransaction(@Param("transactionId") Long transactionId)
+    public ResponseEntity<ApiResponseDto<?>> deleteTransaction(@PathVariable("id") Long transactionId)
             throws TransactionNotFoundException, TransactionServiceLogicException {
 
         return transactionService.deleteTransaction(transactionId);
